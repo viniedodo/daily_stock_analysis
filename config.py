@@ -30,7 +30,12 @@ class Config:
     
     # === 自选股配置 ===
     stock_list: List[str] = field(default_factory=list)
-    
+
+    # === 飞书云文档配置 ===
+    feishu_app_id: Optional[str] = None
+    feishu_app_secret: Optional[str] = None
+    feishu_folder_token: Optional[str] = None  # 目标文件夹 Token
+
     # === 数据源 API Token ===
     tushare_token: Optional[str] = None
     
@@ -73,6 +78,10 @@ class Config:
     # 自定义 Webhook（支持多个，逗号分隔）
     # 适用于：钉钉、Discord、Slack、自建服务等任意支持 POST JSON 的 Webhook
     custom_webhook_urls: List[str] = field(default_factory=list)
+    
+    # 消息长度限制（字节）- 超长自动分批发送
+    feishu_max_bytes: int = 20000  # 飞书限制约 20KB，默认 20000 字节
+    wechat_max_bytes: int = 4000   # 企业微信限制 4096 字节，默认 4000 字节
     
     # === 数据库配置 ===
     database_path: str = "./data/stock_analysis.db"
@@ -155,6 +164,9 @@ class Config:
         
         return cls(
             stock_list=stock_list,
+            feishu_app_id=os.getenv('FEISHU_APP_ID'),
+            feishu_app_secret=os.getenv('FEISHU_APP_SECRET'),
+            feishu_folder_token=os.getenv('FEISHU_FOLDER_TOKEN'),
             tushare_token=os.getenv('TUSHARE_TOKEN'),
             gemini_api_key=os.getenv('GEMINI_API_KEY'),
             gemini_model=os.getenv('GEMINI_MODEL', 'gemini-3-flash-preview'),
@@ -175,6 +187,8 @@ class Config:
             email_password=os.getenv('EMAIL_PASSWORD'),
             email_receivers=[r.strip() for r in os.getenv('EMAIL_RECEIVERS', '').split(',') if r.strip()],
             custom_webhook_urls=[u.strip() for u in os.getenv('CUSTOM_WEBHOOK_URLS', '').split(',') if u.strip()],
+            feishu_max_bytes=int(os.getenv('FEISHU_MAX_BYTES', '20000')),
+            wechat_max_bytes=int(os.getenv('WECHAT_MAX_BYTES', '4000')),
             database_path=os.getenv('DATABASE_PATH', './data/stock_analysis.db'),
             log_dir=os.getenv('LOG_DIR', './logs'),
             log_level=os.getenv('LOG_LEVEL', 'INFO'),
